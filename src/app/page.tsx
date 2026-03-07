@@ -76,7 +76,7 @@ export default function Home() {
   // 底部版权控制状态
   const [showFooter, setShowFooter] = useState(true);
   const [isAtBottom, setIsAtBottom] = useState(false);
-  const scrollTimeout = useRef<NodeJS.Timeout>();
+const scrollTimeout = useRef<NodeJS.Timeout | undefined>(undefined);
 
   const buildShuffleOrder = (ids: string[]) => {
     const next = [...ids];
