@@ -468,8 +468,8 @@ export default function Home() {
   }, [playing, playMode, results, activeMusic, shuffleIndex, shuffleOrder, getNextIndex, handlePlay]);
 
   return (
-    <main className="min-h-[calc(100vh-64px)] bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 font-sans selection:bg-sky-100 dark:selection:bg-sky-900 pb-32 transition-colors duration-300">
-      <div className="container mx-auto px-4 py-12 flex flex-col items-center">
+    <main className="min-h-[calc(100vh-64px)] bg-slate-50 dark:bg-black text-slate-800 dark:text-slate-100 font-sans selection:bg-sky-100 dark:selection:bg-sky-900 pb-32 transition-colors duration-300">
+      <div className="container mx-auto px-4 py-12 flex flex-col items-center min-h-[calc(100vh-64px)]">
         
         {/* Header Area */}
         <motion.div 
@@ -604,21 +604,21 @@ export default function Home() {
             )}
         </AnimatePresence>
 
-{/* Footer Info - Only show when not searched */}
-<AnimatePresence>
-  {!searched && results.length === 0 && (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      transition={{ delay: 0.2 }}
-      className="absolute bottom-8 left-0 right-0 text-center text-slate-400 dark:text-slate-500 text-sm"
-    >
-      <p>© 2024 AQ Music. Powered by Next.js & React.</p>
-      <p className="mt-2 text-xs text-slate-300 dark:text-slate-600">仅供个人学习交流使用</p>
-    </motion.div>
-  )}
-</AnimatePresence>
+        {/* Footer Info - Fixed at bottom of browser window */}
+        <AnimatePresence>
+          {!searched && results.length === 0 && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ delay: 0.2 }}
+              className="fixed bottom-8 left-0 right-0 text-center text-slate-400 dark:text-slate-500 text-sm"
+            >
+              <p>© 2024 AQ Music. Powered by Next.js & React.</p>
+              <p className="mt-2 text-xs text-slate-300 dark:text-slate-600">仅供个人学习交流使用</p>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         {/* Results List */}
         <div className="w-full max-w-4xl mx-auto flex-1">
