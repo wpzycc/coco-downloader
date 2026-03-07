@@ -73,6 +73,11 @@ export default function Home() {
   const [downloadTasks, setDownloadTasks] = useState<DownloadTask[]>([]);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
 
+  // 底部版权控制状态
+  const [showFooter, setShowFooter] = useState(true);
+  const [isAtBottom, setIsAtBottom] = useState(false);
+  const scrollTimeout = useRef<NodeJS.Timeout>();
+
   const buildShuffleOrder = (ids: string[]) => {
     const next = [...ids];
     for (let i = next.length - 1; i > 0; i -= 1) {
@@ -207,6 +212,38 @@ export default function Home() {
       setCurrentTime(time);
     }
   };
+
+  // 滚动监听
+  useEffect(() => {
+    const handleScroll = () => {
+      // 清除之前的定时器
+      if (scrollTimeout.current) {
+        clearTimeout(scrollTimeout.current);
+      }
+
+      // 检查是否滚动到底部（误差 5px）
+      const bottom = Math.abs(window.innerHeight + window.scrollY - document.documentElement.scrollHeight) < 5;
+      setIsAtBottom(bottom);
+
+      // 滚动时立即隐藏
+      setShowFooter(false);
+
+      // 设置定时器，滚动停止后检查是否显示
+      scrollTimeout.current = setTimeout(() => {
+        const isBottom = Math.abs(window.innerHeight + window.scrollY - document.documentElement.scrollHeight) < 5;
+        setShowFooter(isBottom);
+      }, 150);
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+      if (scrollTimeout.current) {
+        clearTimeout(scrollTimeout.current);
+      }
+    };
+  }, []);
 
   useEffect(() => {
     const ids = results.map(r => r.id);
@@ -468,8 +505,8 @@ export default function Home() {
   }, [playing, playMode, results, activeMusic, shuffleIndex, shuffleOrder, getNextIndex, handlePlay]);
 
   return (
-    <main className="min-h-[calc(100vh-64px)] bg-slate-50 dark:bg-black text-slate-800 dark:text-slate-100 font-sans selection:bg-sky-100 dark:selection:bg-sky-900 pb-32 transition-colors duration-300">
-      <div className="container mx-auto px-4 py-12 flex flex-col items-center min-h-[calc(100vh-64px)]">
+    <main className="min-h-screen bg-slate-50 dark:bg-black text-slate-800 dark:text-slate-100 font-sans selection:bg-sky-100 dark:selection:bg-sky-900 transition-colors duration-300">
+      <div className="container mx-auto px-4 py-12 flex flex-col items-center min-h-screen">
         
         {/* Header Area */}
         <motion.div 
@@ -592,7 +629,7 @@ export default function Home() {
                    { icon: Zap, title: "极速解析", desc: "毫秒级解析响应，多线程并发下载，拒绝等待" },
                    { icon: ShieldCheck, title: "纯净无广", desc: "无任何广告干扰，还原最纯粹的音乐体验" }
                  ].map((feature, i) => (
-                   <div key={i} className="bg-white/50 dark:bg-slate-900/50 backdrop-blur-sm border border-slate-100 dark:border-slate-800 p-6 rounded-2xl flex flex-col items-center text-center hover:bg-white dark:hover:bg-slate-900 hover:shadow-lg hover:shadow-slate-100/50 dark:hover:shadow-none transition-all duration-300 group cursor-default">
+                   <div key={i} className="bg-white/50 dark:bg-black/50 backdrop-blur-sm border border-slate-100 dark:border-slate-800 p-6 rounded-2xl flex flex-col items-center text-center hover:bg-white dark:hover:bg-slate-900 hover:shadow-lg hover:shadow-slate-100/50 dark:hover:shadow-none transition-all duration-300 group cursor-default">
                      <div className="w-12 h-12 bg-sky-50 dark:bg-slate-800 rounded-xl flex items-center justify-center text-sky-500 dark:text-sky-400 mb-4 group-hover:scale-110 transition-transform duration-300">
                        <feature.icon className="w-6 h-6" />
                      </div>
@@ -604,18 +641,23 @@ export default function Home() {
             )}
         </AnimatePresence>
 
-        {/* Footer Info - Fixed at bottom of browser window */}
+        {/* Footer Info - 滚动时隐藏，到底部显示 */}
         <AnimatePresence>
           {!searched && results.length === 0 && (
             <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ delay: 0.2 }}
-              className="fixed bottom-8 left-0 right-0 text-center text-slate-400 dark:text-slate-500 text-sm"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ 
+                opacity: showFooter ? 1 : 0,
+                y: showFooter ? 0 : 10
+              }}
+              exit={{ opacity: 0, y: 20 }}
+              transition={{ duration: 0.2 }}
+              className="fixed bottom-8 left-0 right-0 text-center text-slate-400 dark:text-slate-500 text-sm pointer-events-none z-40"
             >
-              <p>© 2024 AQ Music. Powered by Next.js & React.</p>
-              <p className="mt-2 text-xs text-slate-300 dark:text-slate-600">仅供个人学习交流使用</p>
+              <div className="pointer-events-auto inline-block px-4 py-2 rounded-full bg-white/80 dark:bg-black/80 backdrop-blur-sm border border-slate-200 dark:border-slate-800 shadow-lg">
+                <p>© 2024 AQ Music. Powered by Next.js & React.</p>
+                <p className="text-xs text-slate-300 dark:text-slate-600">仅供个人学习交流使用</p>
+              </div>
             </motion.div>
           )}
         </AnimatePresence>
