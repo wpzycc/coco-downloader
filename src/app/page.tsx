@@ -485,7 +485,7 @@ export default function Home() {
              </span>
           </div>
           <h1 className="text-4xl md:text-6xl font-bold text-slate-800 dark:text-slate-100 tracking-tight mb-4 text-center">
-            COCO音乐下载站
+            AQ音乐
           </h1>
           <p className="text-slate-500 dark:text-slate-400 text-lg mb-8 max-w-lg text-center leading-relaxed hidden md:block">
             您的专属高品质音乐获取助手，支持多平台搜索，
@@ -614,7 +614,7 @@ export default function Home() {
               transition={{ delay: 0.2 }}
               className="mt-16 text-center text-slate-400 dark:text-slate-500 text-sm"
             >
-              <p>© 2024 COCO Music. Powered by Next.js & React.</p>
+              <p>© 2024 AQ Music. Powered by Next.js & React.</p>
               <p className="mt-2 text-xs text-slate-300 dark:text-slate-600">仅供个人学习交流使用，请勿用于商业用途</p>
             </motion.div>
           )}
