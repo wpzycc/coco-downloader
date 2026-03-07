@@ -604,21 +604,21 @@ export default function Home() {
             )}
         </AnimatePresence>
 
-        {/* Footer Info - Only show when not searched */}
-        <AnimatePresence>
-          {!searched && results.length === 0 && (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ delay: 0.2 }}
-              className="mt-16 text-center text-slate-400 dark:text-slate-500 text-sm"
-            >
-              <p>© 2024 AQ Music. Powered by Next.js & React.</p>
-              <p className="mt-2 text-xs text-slate-300 dark:text-slate-600">仅供个人学习交流使用，请勿用于商业用途</p>
-            </motion.div>
-          )}
-        </AnimatePresence>
+{/* Footer Info - Only show when not searched */}
+<AnimatePresence>
+  {!searched && results.length === 0 && (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ delay: 0.2 }}
+      className="absolute bottom-8 left-0 right-0 text-center text-slate-400 dark:text-slate-500 text-sm"
+    >
+      <p>© 2024 AQ Music. Powered by Next.js & React.</p>
+      <p className="mt-2 text-xs text-slate-300 dark:text-slate-600">仅供个人学习交流使用</p>
+    </motion.div>
+  )}
+</AnimatePresence>
 
         {/* Results List */}
         <div className="w-full max-w-4xl mx-auto flex-1">
