@@ -16,7 +16,6 @@ export function Navbar() {
     const isDark = currentTheme === 'dark';
     const newTheme = isDark ? 'light' : 'dark';
 
-    // Check if View Transitions API is supported
     if (!document.startViewTransition) {
       setTheme(newTheme);
       return;
@@ -54,14 +53,13 @@ export function Navbar() {
 
   return (
     <>
-      <nav className="h-16 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-sky-100 dark:border-slate-800 z-50 px-4 md:px-8 flex items-center justify-between transition-colors duration-300">
-        <Link href="/" className="flex items-center gap-2 group">
+      <nav className="h-16 bg-white/80 dark:bg-black backdrop-blur-md border-b border-sky-100 dark:border-slate-800 z-50 px-4 md:px-8 flex items-center justify-between transition-colors duration-300">
+        <Link href="/" className="flex items-center gap-2 group cursor-pointer">
           <Image src="/images/cherry-logo.svg" alt="AQ音乐" width={40} height={40} className="h-10 w-auto transition-transform" />
           <span className="text-lg font-semibold text-slate-800 dark:text-slate-200">AQ音乐</span>
         </Link>
         
         <div className="flex items-center gap-2">
-          {/* 仅保留主题切换按钮 */}
           <button
             onClick={toggleTheme}
             className="p-2 text-slate-400 dark:text-slate-500 hover:text-sky-500 dark:hover:text-sky-400 hover:bg-sky-50 dark:hover:bg-slate-800 rounded-full transition-all duration-300 cursor-pointer"
