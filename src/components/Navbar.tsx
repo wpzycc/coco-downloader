@@ -53,8 +53,8 @@ export function Navbar() {
 
   return (
     <>
-      <nav className="h-16 bg-white/80 dark:bg-black backdrop-blur-md border-b border-sky-100 dark:border-slate-800 z-50 px-4 md:px-8 flex items-center justify-between transition-colors duration-300">
-        <Link href="/" className="flex items-center gap-2 group cursor-pointer">
+      <nav className="h-16 bg-white/80 dark:bg-black/80 backdrop-blur-md z-50 px-4 md:px-8 flex items-center justify-between transition-colors duration-300">
+        <Link href="https://music.wpys.cc" className="flex items-center gap-2 group cursor-pointer">
           <Image src="/images/cherry-logo.svg" alt="AQ音乐" width={40} height={40} className="h-10 w-auto transition-transform" />
           <span className="text-lg font-semibold text-slate-800 dark:text-slate-200">AQ音乐</span>
         </Link>
