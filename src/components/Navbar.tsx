@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { Sun, Moon } from "lucide-react";
+import { Sun, Moon, Home } from "lucide-react";
 import { useState, MouseEvent } from "react";
 import { useTheme } from "next-themes";
 import DeveloperPanel from "./DeveloperPanel";
@@ -60,6 +60,16 @@ export function Navbar() {
         </Link>
         
         <div className="flex items-center gap-2">
+          {/* 首页按钮 */}
+          <Link
+            href="https://music.wpys.cc"
+            className="p-2 text-slate-400 dark:text-slate-500 hover:text-sky-500 dark:hover:text-sky-400 hover:bg-sky-50 dark:hover:bg-slate-800 rounded-full transition-all duration-300 cursor-pointer"
+            title="返回首页"
+          >
+            <Home className="w-5 h-5" />
+          </Link>
+
+          {/* 主题切换按钮 */}
           <button
             onClick={toggleTheme}
             className="p-2 text-slate-400 dark:text-slate-500 hover:text-sky-500 dark:hover:text-sky-400 hover:bg-sky-50 dark:hover:bg-slate-800 rounded-full transition-all duration-300 cursor-pointer"
