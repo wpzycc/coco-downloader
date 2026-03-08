@@ -61,7 +61,7 @@ export function PlayerBar({
         initial={{ y: 100, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         exit={{ y: 100, opacity: 0 }}
-        className="fixed bottom-0 left-0 right-0 bg-white/80 dark:bg-slate-900/80 backdrop-blur-lg border-t border-slate-200 dark:border-slate-800 px-4 py-3 z-50 shadow-2xl shadow-slate-200/50 dark:shadow-none pb-safe"
+        className="fixed bottom-0 left-0 right-0 bg-white/80 dark:bg-black/80 backdrop-blur-lg border-t border-slate-200 dark:border-slate-800 px-4 py-3 z-50 shadow-2xl shadow-slate-200/50 dark:shadow-none pb-safe"
       >
         {/* Mobile Progress Bar */}
         <div className="absolute top-0 left-0 right-0 md:hidden -mt-3 px-0">
@@ -84,7 +84,7 @@ export function PlayerBar({
           {/* Track Info */}
           <div className="flex items-center gap-3 md:gap-4 flex-1 md:w-1/4 md:min-w-[200px] min-w-0">
             <div className={cn(
-              "w-10 h-10 md:w-12 md:h-12 rounded-full bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 overflow-hidden relative flex-shrink-0",
+              "w-10 h-10 md:w-12 md:h-12 rounded-full bg-slate-100 dark:bg-black border border-slate-200 dark:border-slate-700 overflow-hidden relative flex-shrink-0",
               isPlaying && "animate-spin-slow"
             )} style={{ animationDuration: '8s' }}>
               {currentMusic.cover ? (
