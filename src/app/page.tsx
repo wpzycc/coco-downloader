@@ -51,8 +51,14 @@ type PlayMode = "order" | "shuffle" | "single";
 export default function Home() {
   const [query, setQuery] = useState("");
   const [provider, setProvider] = useState("all");
-  const [results, setResults] = useState<MusicItem[]>([]);
   const [loading, setLoading] = useState(false);
+  
+  // 分页相关状态
+  const [currentPage, setCurrentPage] = useState(1);
+  const [hasMore, setHasMore] = useState(false);
+  const [allResults, setAllResults] = useState<MusicItem[]>([]);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const pageSize = 10;
   
   // Playback State
   const [activeMusic, setActiveMusic] = useState<MusicItem | null>(null);
@@ -88,17 +94,39 @@ export default function Home() {
     
     setLoading(true);
     setSearched(true);
-    setResults([]);
+    setCurrentPage(1);
+    setAllResults([]);
     setSelectedIds(new Set());
     
     try {
-      const res = await fetch(`/api/search?q=${encodeURIComponent(query)}&provider=${provider}`);
+      const res = await fetch(`/api/search?q=${encodeURIComponent(query)}&provider=${provider}&page=1&pageSize=${pageSize}`);
       const data = await res.json();
-      setResults(data.items || []);
+      setAllResults(data.items || []);
+      setHasMore(data.hasMore || false);
     } catch (err) {
       console.error(err);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const loadMore = async () => {
+    if (isLoadingMore || !hasMore) return;
+    
+    setIsLoadingMore(true);
+    const nextPage = currentPage + 1;
+    
+    try {
+      const res = await fetch(`/api/search?q=${encodeURIComponent(query)}&provider=${provider}&page=${nextPage}&pageSize=${pageSize}`);
+      const data = await res.json();
+      
+      setAllResults(prev => [...prev, ...(data.items || [])]);
+      setHasMore(data.hasMore || false);
+      setCurrentPage(nextPage);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setIsLoadingMore(false);
     }
   };
 
@@ -108,8 +136,8 @@ export default function Home() {
       setShuffleIndex(index);
       return;
     }
-    if (results.length > 0) {
-      const ids = results.map(r => r.id);
+    if (allResults.length > 0) {
+      const ids = allResults.map(r => r.id);
       const nextOrder = buildShuffleOrder(ids);
       setShuffleOrder(nextOrder);
       setShuffleIndex(nextOrder.indexOf(id));
@@ -120,16 +148,16 @@ export default function Home() {
 
   const getNextIndexById = (id: string) => {
     if (playMode === "shuffle") {
-      const order = shuffleOrder.length > 0 ? shuffleOrder : results.map(r => r.id);
+      const order = shuffleOrder.length > 0 ? shuffleOrder : allResults.map(r => r.id);
       const orderIndex = order.indexOf(id);
       if (orderIndex >= 0 && orderIndex < order.length - 1) {
         const nextId = order[orderIndex + 1];
-        return results.findIndex(r => r.id === nextId);
+        return allResults.findIndex(r => r.id === nextId);
       }
       return -1;
     }
-    const index = results.findIndex(r => r.id === id);
-    if (index >= 0 && index < results.length - 1) {
+    const index = allResults.findIndex(r => r.id === id);
+    if (index >= 0 && index < allResults.length - 1) {
       return index + 1;
     }
     return -1;
@@ -154,14 +182,13 @@ export default function Home() {
       
       setActiveMusic(item);
       syncShuffleIndex(item.id);
-      setPlaying(false); // Wait for load
+      setPlaying(false);
       setCurrentTime(0);
 
       const res = await fetch(`/api/url?id=${item.id}&provider=${item.provider || 'gequbao'}`);
       const data = await res.json();
       
       if (data.url && audioRef.current) {
-        // 如果返回了封面，更新当前播放歌曲的封面
         if (data.cover) {
           setActiveMusic(prev => prev ? { ...prev, cover: data.cover } : item);
         }
@@ -174,7 +201,7 @@ export default function Home() {
             console.error("Play failed", e);
             const nextIndex = getNextIndexById(item.id);
             if (nextIndex >= 0) {
-              handlePlay(results[nextIndex]);
+              handlePlay(allResults[nextIndex]);
             } else {
               setActiveMusic(null);
               setPlaying(false);
@@ -183,7 +210,7 @@ export default function Home() {
       } else {
         const nextIndex = getNextIndexById(item.id);
         if (nextIndex >= 0) {
-          handlePlay(results[nextIndex]);
+          handlePlay(allResults[nextIndex]);
         } else {
           setActiveMusic(null);
           setPlaying(false);
@@ -193,7 +220,7 @@ export default function Home() {
       console.error(err);
       const nextIndex = getNextIndexById(item.id);
       if (nextIndex >= 0) {
-        handlePlay(results[nextIndex]);
+        handlePlay(allResults[nextIndex]);
       } else {
         setActiveMusic(null);
         setPlaying(false);
@@ -209,14 +236,14 @@ export default function Home() {
   };
 
   useEffect(() => {
-    const ids = results.map(r => r.id);
+    const ids = allResults.map(r => r.id);
     if (ids.length === 0) {
       setShuffleOrder([]);
       setShuffleIndex(-1);
       return;
     }
     setShuffleOrder(buildShuffleOrder(ids));
-  }, [results]);
+  }, [allResults]);
 
   useEffect(() => {
     if (!activeMusic) {
@@ -235,7 +262,6 @@ export default function Home() {
 
   const executeDownload = async (task: DownloadTask) => {
     try {
-      // Update status to downloading
       setDownloadTasks(prev => prev.map(t => 
         t.id === task.id ? { ...t, status: 'downloading' } : t
       ));
@@ -257,7 +283,6 @@ export default function Home() {
         }
       });
 
-      // Handle completion
       const url = window.URL.createObjectURL(new Blob([response.data]));
       const link = document.createElement('a');
       link.href = url;
@@ -285,7 +310,6 @@ export default function Home() {
     const cleanTitle = item.title.replace(/\s+/g, ' ').trim();
     const filename = `${cleanTitle}.mp3`;
 
-    // Add initial task
     const newTask: DownloadTask = {
       id: taskId,
       musicItem: item,
@@ -297,8 +321,6 @@ export default function Home() {
 
     setDownloadTasks(prev => [newTask, ...prev]);
     setIsDrawerOpen(true);
-    
-    // Execute immediately for single download
     await executeDownload(newTask);
   };
 
@@ -313,22 +335,21 @@ export default function Home() {
   };
 
   const toggleAll = () => {
-    if (selectedIds.size === results.length) {
+    if (selectedIds.size === allResults.length) {
       setSelectedIds(new Set());
     } else {
-      setSelectedIds(new Set(results.map(r => r.id)));
+      setSelectedIds(new Set(allResults.map(r => r.id)));
     }
   };
 
   const handleBatchDownload = async () => {
-    const items = results.filter(r => selectedIds.has(r.id));
+    const items = allResults.filter(r => selectedIds.has(r.id));
     if (items.length === 0) return;
     
     if (items.length > 5) {
       if (!confirm(`即将下载 ${items.length} 首歌曲，可能需要一些时间，是否继续？`)) return;
     }
 
-    // 1. Create all tasks immediately
     const newTasks: DownloadTask[] = items.map(item => {
       const cleanTitle = item.title.replace(/\s+/g, ' ').trim();
       return {
@@ -341,12 +362,10 @@ export default function Home() {
       };
     });
 
-    // 2. Add to state
     setDownloadTasks(prev => [...newTasks, ...prev]);
     setIsDrawerOpen(true);
     setDownloadingCount(items.length);
 
-    // 3. Process with concurrency limit
     const CONCURRENCY_LIMIT = 3;
     const queue = [...newTasks];
     const activePromises: Promise<void>[] = [];
@@ -361,14 +380,12 @@ export default function Home() {
         if (task) {
           const promise = executeDownload(task).then(() => {
             setDownloadingCount(prev => Math.max(0, prev - 1));
-            // Remove self from active promises
             const index = activePromises.indexOf(promise);
             if (index > -1) activePromises.splice(index, 1);
           });
           activePromises.push(promise);
         }
       }
-      // Wait for remaining
       await Promise.all(activePromises);
     };
 
@@ -376,17 +393,17 @@ export default function Home() {
     setDownloadingCount(0);
   };
 
-  const currentIndex = activeMusic ? results.findIndex(r => r.id === activeMusic.id) : -1;
+  const currentIndex = activeMusic ? allResults.findIndex(r => r.id === activeMusic.id) : -1;
   const getNextIndex = () => {
     if (!activeMusic) return -1;
     if (playMode === "shuffle") {
       if (shuffleIndex >= 0 && shuffleIndex < shuffleOrder.length - 1) {
         const nextId = shuffleOrder[shuffleIndex + 1];
-        return results.findIndex(r => r.id === nextId);
+        return allResults.findIndex(r => r.id === nextId);
       }
       return -1;
     }
-    if (currentIndex >= 0 && currentIndex < results.length - 1) {
+    if (currentIndex >= 0 && currentIndex < allResults.length - 1) {
       return currentIndex + 1;
     }
     return -1;
@@ -397,7 +414,7 @@ export default function Home() {
     if (playMode === "shuffle") {
       if (shuffleIndex > 0) {
         const prevId = shuffleOrder[shuffleIndex - 1];
-        return results.findIndex(r => r.id === prevId);
+        return allResults.findIndex(r => r.id === prevId);
       }
       return -1;
     }
@@ -412,11 +429,11 @@ export default function Home() {
 
   const handleNext = () => {
     const nextIndex = getNextIndex();
-    if (nextIndex >= 0) handlePlay(results[nextIndex]);
+    if (nextIndex >= 0) handlePlay(allResults[nextIndex]);
   };
   const handlePrev = () => {
     const prevIndex = getPrevIndex();
-    if (prevIndex >= 0) handlePlay(results[prevIndex]);
+    if (prevIndex >= 0) handlePlay(allResults[prevIndex]);
   };
 
   const togglePlayMode = () => {
@@ -450,7 +467,7 @@ export default function Home() {
       }
       const nextIndex = getNextIndex();
       if (nextIndex >= 0) {
-        handlePlay(results[nextIndex]);
+        handlePlay(allResults[nextIndex]);
       } else {
         setPlaying(false);
       }
@@ -465,7 +482,7 @@ export default function Home() {
       audio.removeEventListener('loadedmetadata', handleLoadedMetadata);
       audio.removeEventListener('ended', handleEnded);
     };
-  }, [playing, playMode, results, activeMusic, shuffleIndex, shuffleOrder, getNextIndex, handlePlay]);
+  }, [playing, playMode, allResults, activeMusic, shuffleIndex, shuffleOrder, getNextIndex, handlePlay]);
 
   return (
     <main className="min-h-screen bg-slate-50 dark:bg-black text-slate-800 dark:text-slate-100 font-sans selection:bg-sky-100 dark:selection:bg-sky-900 transition-colors duration-300">
@@ -520,7 +537,7 @@ export default function Home() {
                   "px-4 py-2 rounded-full text-sm font-medium transition-all duration-300 cursor-pointer",
                   provider === p.id 
                     ? "bg-sky-500 text-white shadow-lg shadow-sky-200 dark:shadow-none ring-2 ring-sky-200 dark:ring-sky-800 ring-offset-2 dark:ring-offset-slate-900" 
-                    : "bg-white dark:bg-black text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 border border-slate-100 dark:border-slate-800 hover:border-sky-200 dark:hover:border-sky-700"
+                    : "bg-white dark:bg-black text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800"
                 )}
               >
                 {p.name}
@@ -528,10 +545,10 @@ export default function Home() {
             ))}
           </div>
           
-          {/* Search Bar - 修改背景为纯黑 */}
+          {/* Search Bar */}
           <form onSubmit={handleSearch} className="relative w-full max-w-2xl group mb-6">
             <div className="absolute inset-0 bg-sky-200 dark:bg-sky-900 rounded-full blur-xl opacity-30 group-hover:opacity-50 transition-opacity duration-300"></div>
-            <div className="relative bg-white dark:bg-black shadow-xl shadow-slate-200/50 dark:shadow-none rounded-full flex items-center p-2 pr-2 border border-slate-100 dark:border-slate-800 transition-transform duration-300 hover:scale-[1.01]">
+            <div className="relative bg-white dark:bg-black shadow-xl shadow-slate-200/50 dark:shadow-none rounded-full flex items-center p-2 pr-2 transition-transform duration-300 hover:scale-[1.01]">
               <Search className="w-6 h-6 text-slate-400 dark:text-slate-500 ml-4" />
               <input
                 type="text"
@@ -567,7 +584,7 @@ export default function Home() {
                   <span 
                     key={tag}
                     onClick={() => setQuery(tag)}
-                    className="px-3 py-1 bg-white dark:bg-black border border-slate-100 dark:border-slate-800 rounded-full cursor-pointer hover:bg-sky-50 dark:hover:bg-slate-800 hover:text-sky-600 dark:hover:text-sky-400 hover:border-sky-100 dark:hover:border-sky-900 transition-colors shadow-sm dark:shadow-none"
+                    className="px-3 py-1 bg-white dark:bg-black rounded-full cursor-pointer hover:bg-sky-50 dark:hover:bg-slate-800 hover:text-sky-600 dark:hover:text-sky-400 transition-colors shadow-sm dark:shadow-none"
                   >
                     {tag}
                   </span>
@@ -577,34 +594,7 @@ export default function Home() {
           </AnimatePresence>
         </motion.div>
 
-        {/* Features Grid - Only show when not searched */}
-        <AnimatePresence>
-            {!searched && results.length === 0 && (
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -20 }}
-                transition={{ delay: 0.1 }}
-                className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl w-full mt-8"
-              >
-                 {[
-                   { icon: Headphones, title: "全网聚合", desc: "支持主流音乐平台搜索，海量曲库一网打尽" },
-                   { icon: Zap, title: "极速解析", desc: "毫秒级解析响应，多线程并发下载，拒绝等待" },
-                   { icon: ShieldCheck, title: "纯净无广", desc: "无任何广告干扰，还原最纯粹的音乐体验" }
-                 ].map((feature, i) => (
-                   <div key={i} className="bg-white/50 dark:bg-black/50 backdrop-blur-sm border border-slate-100 dark:border-slate-800 p-6 rounded-2xl flex flex-col items-center text-center hover:bg-white dark:hover:bg-slate-900 hover:shadow-lg hover:shadow-slate-100/50 dark:hover:shadow-none transition-all duration-300 group cursor-default">
-                     <div className="w-12 h-12 bg-sky-50 dark:bg-slate-800 rounded-xl flex items-center justify-center text-sky-500 dark:text-sky-400 mb-4 group-hover:scale-110 transition-transform duration-300">
-                       <feature.icon className="w-6 h-6" />
-                     </div>
-                     <h3 className="text-lg font-bold text-slate-800 dark:text-slate-100 mb-2">{feature.title}</h3>
-                     <p className="text-slate-500 dark:text-slate-400 text-sm leading-relaxed">{feature.desc}</p>
-                   </div>
-                 ))}
-              </motion.div>
-            )}
-        </AnimatePresence>
-
-        {/* Results List - 修改背景为纯黑 */}
+        {/* Results List - 无边框无分割线 */}
         <div className="w-full max-w-4xl mx-auto flex-1">
           <AnimatePresence mode="wait">
             {loading ? (
@@ -618,27 +608,27 @@ export default function Home() {
                 <Loader2 className="w-10 h-10 animate-spin mb-4 text-sky-400" />
                 <p>正在寻找动听旋律...</p>
               </motion.div>
-            ) : results.length > 0 ? (
+            ) : allResults.length > 0 ? (
               <motion.div 
                 key="results"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0 }}
-                className="bg-white dark:bg-black rounded-2xl shadow-sm border border-slate-100 dark:border-slate-800 overflow-hidden mb-24"
+                className="bg-white dark:bg-black rounded-2xl shadow-sm overflow-hidden mb-24"
               >
                 {/* List Header */}
-                <div className="grid grid-cols-[40px_1fr_40px] md:grid-cols-[50px_2fr_1.5fr_120px] gap-4 p-4 border-b border-slate-50 dark:border-slate-800 bg-slate-50/50 dark:bg-black/50 text-sm font-medium text-slate-500 dark:text-slate-400">
+                <div className="grid grid-cols-[40px_1fr_40px] md:grid-cols-[50px_2fr_1.5fr_120px] gap-4 p-4 bg-slate-50/50 dark:bg-black/50 text-sm font-medium text-slate-500 dark:text-slate-400">
                   <div className="flex justify-center items-center">
                     <button 
                       onClick={toggleAll}
                       className={cn(
                         "w-5 h-5 rounded border flex items-center justify-center transition-colors cursor-pointer",
-                        selectedIds.size === results.length && results.length > 0
+                        selectedIds.size === allResults.length && allResults.length > 0
                           ? "bg-sky-500 border-sky-500 text-white" 
                           : "border-slate-300 dark:border-slate-600 hover:border-sky-400 dark:hover:border-sky-500"
                       )}
                     >
-                      {selectedIds.size === results.length && results.length > 0 && <Check className="w-3.5 h-3.5" />}
+                      {selectedIds.size === allResults.length && allResults.length > 0 && <Check className="w-3.5 h-3.5" />}
                     </button>
                   </div>
                   <div>歌曲</div>
@@ -646,9 +636,9 @@ export default function Home() {
                   <div className="text-right pr-4 md:pr-4">操作</div>
                 </div>
 
-                {/* List Items */}
-                <div className="divide-y divide-slate-50 dark:divide-slate-800">
-                  {results.map((item) => {
+                {/* List Items - 无分割线 */}
+                <div className="divide-y-0">
+                  {allResults.map((item) => {
                     const isActive = activeMusic?.id === item.id;
                     const isSelected = selectedIds.has(item.id);
                     
@@ -738,6 +728,26 @@ export default function Home() {
                     );
                   })}
                 </div>
+
+                {/* 加载更多按钮 */}
+                {hasMore && (
+                  <div className="flex justify-center py-6">
+                    <button
+                      onClick={loadMore}
+                      disabled={isLoadingMore}
+                      className="px-6 py-2 bg-white/50 dark:bg-black/50 backdrop-blur-sm text-slate-600 dark:text-slate-400 rounded-full font-medium transition-all hover:bg-white dark:hover:bg-slate-900 hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                    >
+                      {isLoadingMore ? (
+                        <>
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                          加载中...
+                        </>
+                      ) : (
+                        "加载更多"
+                      )}
+                    </button>
+                  </div>
+                )}
               </motion.div>
             ) : searched ? (
               <motion.div
@@ -797,7 +807,7 @@ export default function Home() {
             exit={{ y: 100, opacity: 0 }}
             className="fixed bottom-24 left-0 right-0 flex justify-center z-40 pointer-events-none"
           >
-            <div className="bg-white dark:bg-slate-900 shadow-xl shadow-slate-200/50 dark:shadow-none border border-slate-100 dark:border-slate-800 rounded-full px-6 py-3 flex items-center gap-6 pointer-events-auto">
+            <div className="bg-white dark:bg-slate-900 shadow-xl shadow-slate-200/50 dark:shadow-none rounded-full px-6 py-3 flex items-center gap-6 pointer-events-auto">
               <span className="text-sm font-medium text-slate-600 dark:text-slate-400">
                 已选择 <span className="text-sky-600 dark:text-sky-400 font-bold">{selectedIds.size}</span> 首歌曲
               </span>
