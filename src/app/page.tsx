@@ -53,7 +53,7 @@ export default function Home() {
   const [provider, setProvider] = useState("all");
   const [loading, setLoading] = useState(false);
   
-  // 分页相关状态
+  // 分页相关状态（保留但按钮已删）
   const [currentPage, setCurrentPage] = useState(1);
   const [hasMore, setHasMore] = useState(false);
   const [allResults, setAllResults] = useState<MusicItem[]>([]);
@@ -107,26 +107,6 @@ export default function Home() {
       console.error(err);
     } finally {
       setLoading(false);
-    }
-  };
-
-  const loadMore = async () => {
-    if (isLoadingMore || !hasMore) return;
-    
-    setIsLoadingMore(true);
-    const nextPage = currentPage + 1;
-    
-    try {
-      const res = await fetch(`/api/search?q=${encodeURIComponent(query)}&provider=${provider}&page=${nextPage}&pageSize=${pageSize}`);
-      const data = await res.json();
-      
-      setAllResults(prev => [...prev, ...(data.items || [])]);
-      setHasMore(data.hasMore || false);
-      setCurrentPage(nextPage);
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setIsLoadingMore(false);
     }
   };
 
@@ -486,7 +466,8 @@ export default function Home() {
 
   return (
     <main className="min-h-screen bg-slate-50 dark:bg-black text-slate-800 dark:text-slate-100 font-sans selection:bg-sky-100 dark:selection:bg-sky-900 transition-colors duration-300">
-      <div className="container mx-auto px-4 py-12 flex flex-col items-center min-h-screen">
+      {/* 主体内容容器 - 加 pb-16 为底部版权留出空间 */}
+      <div className="container mx-auto px-4 py-12 flex flex-col items-center min-h-screen pb-16">
         
         {/* Header Area */}
         <motion.div 
@@ -496,18 +477,11 @@ export default function Home() {
             searched ? "mt-0 mb-8" : "mt-[10vh] mb-12"
           )}
         >
-          <div className="flex items-center gap-3 mb-4">
-             <span className="px-3 py-1 rounded-full bg-sky-100 dark:bg-sky-900 text-sky-600 dark:text-sky-300 text-xs font-bold tracking-wider uppercase">
-               v2.0 Beta
-             </span>
-          </div>
           <h1 className="text-4xl md:text-6xl font-bold text-slate-800 dark:text-slate-100 tracking-tight mb-4 text-center">
             AQ音乐
           </h1>
           <p className="text-slate-500 dark:text-slate-400 text-lg mb-8 max-w-lg text-center leading-relaxed hidden md:block">
-            您的专属高品质音乐获取助手，支持多平台搜索，
-            <br />
-            极速解析，批量下载，纯净无广。
+            高品质音乐聚合搜索，支持试听下载
           </p>
           
           {/* Provider Selector */}
@@ -594,7 +568,7 @@ export default function Home() {
           </AnimatePresence>
         </motion.div>
 
-        {/* Results List - 无边框无分割线 */}
+        {/* Results List - 无加载更多按钮 */}
         <div className="w-full max-w-4xl mx-auto flex-1">
           <AnimatePresence mode="wait">
             {loading ? (
@@ -728,26 +702,6 @@ export default function Home() {
                     );
                   })}
                 </div>
-
-                {/* 加载更多按钮 */}
-                {hasMore && (
-                  <div className="flex justify-center py-6">
-                    <button
-                      onClick={loadMore}
-                      disabled={isLoadingMore}
-                      className="px-6 py-2 bg-white/50 dark:bg-black/50 backdrop-blur-sm text-slate-600 dark:text-slate-400 rounded-full font-medium transition-all hover:bg-white dark:hover:bg-slate-900 hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
-                    >
-                      {isLoadingMore ? (
-                        <>
-                          <Loader2 className="w-4 h-4 animate-spin" />
-                          加载中...
-                        </>
-                      ) : (
-                        "加载更多"
-                      )}
-                    </button>
-                  </div>
-                )}
               </motion.div>
             ) : searched ? (
               <motion.div
@@ -761,6 +715,13 @@ export default function Home() {
           </AnimatePresence>
         </div>
       </div>
+
+      {/* 底部版权 - 只在首页显示，固定在底部，无边框 */}
+      {!searched && allResults.length === 0 && (
+        <footer className="fixed bottom-0 left-0 right-0 w-full py-3 text-center text-xs text-slate-400 dark:text-slate-500 bg-white/80 dark:bg-black/80 backdrop-blur-sm z-40">
+          <p>AQ音乐 仅限学习交流</p>
+        </footer>
+      )}
 
       {/* Download Drawer */}
       <DownloadDrawer
