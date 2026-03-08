@@ -528,10 +528,10 @@ export default function Home() {
             ))}
           </div>
           
-          {/* Search Bar */}
+          {/* Search Bar - 修改背景为纯黑 */}
           <form onSubmit={handleSearch} className="relative w-full max-w-2xl group mb-6">
             <div className="absolute inset-0 bg-sky-200 dark:bg-sky-900 rounded-full blur-xl opacity-30 group-hover:opacity-50 transition-opacity duration-300"></div>
-            <div className="relative bg-white dark:bg-slate-900 shadow-xl shadow-slate-200/50 dark:shadow-none rounded-full flex items-center p-2 pr-2 border border-slate-100 dark:border-slate-800 transition-transform duration-300 hover:scale-[1.01]">
+            <div className="relative bg-white dark:bg-black shadow-xl shadow-slate-200/50 dark:shadow-none rounded-full flex items-center p-2 pr-2 border border-slate-100 dark:border-slate-800 transition-transform duration-300 hover:scale-[1.01]">
               <Search className="w-6 h-6 text-slate-400 dark:text-slate-500 ml-4" />
               <input
                 type="text"
@@ -604,7 +604,7 @@ export default function Home() {
             )}
         </AnimatePresence>
 
-        {/* Results List */}
+        {/* Results List - 修改背景为纯黑 */}
         <div className="w-full max-w-4xl mx-auto flex-1">
           <AnimatePresence mode="wait">
             {loading ? (
@@ -624,7 +624,7 @@ export default function Home() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0 }}
-                className="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-800 overflow-hidden mb-24"
+                className="bg-white dark:bg-black rounded-2xl shadow-sm border border-slate-100 dark:border-slate-800 overflow-hidden mb-24"
               >
                 {/* List Header */}
                 <div className="grid grid-cols-[40px_1fr_40px] md:grid-cols-[50px_2fr_1.5fr_120px] gap-4 p-4 border-b border-slate-50 dark:border-slate-800 bg-slate-50/50 dark:bg-black/50 text-sm font-medium text-slate-500 dark:text-slate-400">
