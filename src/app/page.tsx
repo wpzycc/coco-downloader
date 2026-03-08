@@ -73,11 +73,6 @@ export default function Home() {
   const [downloadTasks, setDownloadTasks] = useState<DownloadTask[]>([]);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
 
-  // 底部版权控制状态
-  const [showFooter, setShowFooter] = useState(true);
-  const [isAtBottom, setIsAtBottom] = useState(false);
-const scrollTimeout = useRef<NodeJS.Timeout | undefined>(undefined);
-
   const buildShuffleOrder = (ids: string[]) => {
     const next = [...ids];
     for (let i = next.length - 1; i > 0; i -= 1) {
@@ -212,38 +207,6 @@ const scrollTimeout = useRef<NodeJS.Timeout | undefined>(undefined);
       setCurrentTime(time);
     }
   };
-
-  // 滚动监听
-  useEffect(() => {
-    const handleScroll = () => {
-      // 清除之前的定时器
-      if (scrollTimeout.current) {
-        clearTimeout(scrollTimeout.current);
-      }
-
-      // 检查是否滚动到底部（误差 5px）
-      const bottom = Math.abs(window.innerHeight + window.scrollY - document.documentElement.scrollHeight) < 5;
-      setIsAtBottom(bottom);
-
-      // 滚动时立即隐藏
-      setShowFooter(false);
-
-      // 设置定时器，滚动停止后检查是否显示
-      scrollTimeout.current = setTimeout(() => {
-        const isBottom = Math.abs(window.innerHeight + window.scrollY - document.documentElement.scrollHeight) < 5;
-        setShowFooter(isBottom);
-      }, 150);
-    };
-
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    
-    return () => {
-      window.removeEventListener('scroll', handleScroll);
-      if (scrollTimeout.current) {
-        clearTimeout(scrollTimeout.current);
-      }
-    };
-  }, []);
 
   useEffect(() => {
     const ids = results.map(r => r.id);
@@ -557,7 +520,7 @@ const scrollTimeout = useRef<NodeJS.Timeout | undefined>(undefined);
                   "px-4 py-2 rounded-full text-sm font-medium transition-all duration-300 cursor-pointer",
                   provider === p.id 
                     ? "bg-sky-500 text-white shadow-lg shadow-sky-200 dark:shadow-none ring-2 ring-sky-200 dark:ring-sky-800 ring-offset-2 dark:ring-offset-slate-900" 
-                    : "bg-white dark:bg-slate-900 text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 border border-slate-100 dark:border-slate-800 hover:border-sky-200 dark:hover:border-sky-700"
+                    : "bg-white dark:bg-black text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 border border-slate-100 dark:border-slate-800 hover:border-sky-200 dark:hover:border-sky-700"
                 )}
               >
                 {p.name}
@@ -604,7 +567,7 @@ const scrollTimeout = useRef<NodeJS.Timeout | undefined>(undefined);
                   <span 
                     key={tag}
                     onClick={() => setQuery(tag)}
-                    className="px-3 py-1 bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-full cursor-pointer hover:bg-sky-50 dark:hover:bg-slate-800 hover:text-sky-600 dark:hover:text-sky-400 hover:border-sky-100 dark:hover:border-sky-900 transition-colors shadow-sm dark:shadow-none"
+                    className="px-3 py-1 bg-white dark:bg-black border border-slate-100 dark:border-slate-800 rounded-full cursor-pointer hover:bg-sky-50 dark:hover:bg-slate-800 hover:text-sky-600 dark:hover:text-sky-400 hover:border-sky-100 dark:hover:border-sky-900 transition-colors shadow-sm dark:shadow-none"
                   >
                     {tag}
                   </span>
@@ -641,27 +604,6 @@ const scrollTimeout = useRef<NodeJS.Timeout | undefined>(undefined);
             )}
         </AnimatePresence>
 
-        {/* Footer Info - 滚动时隐藏，到底部显示 */}
-        <AnimatePresence>
-          {!searched && results.length === 0 && (
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ 
-                opacity: showFooter ? 1 : 0,
-                y: showFooter ? 0 : 10
-              }}
-              exit={{ opacity: 0, y: 20 }}
-              transition={{ duration: 0.2 }}
-              className="fixed bottom-8 left-0 right-0 text-center text-slate-400 dark:text-slate-500 text-sm pointer-events-none z-40"
-            >
-              <div className="pointer-events-auto inline-block px-4 py-2 rounded-full bg-white/80 dark:bg-black/80 backdrop-blur-sm border border-slate-200 dark:border-slate-800 shadow-lg">
-                <p>© 2024 AQ Music. Powered by Next.js & React.</p>
-                <p className="text-xs text-slate-300 dark:text-slate-600">仅供个人学习交流使用</p>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-
         {/* Results List */}
         <div className="w-full max-w-4xl mx-auto flex-1">
           <AnimatePresence mode="wait">
@@ -685,7 +627,7 @@ const scrollTimeout = useRef<NodeJS.Timeout | undefined>(undefined);
                 className="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-800 overflow-hidden mb-24"
               >
                 {/* List Header */}
-                <div className="grid grid-cols-[40px_1fr_40px] md:grid-cols-[50px_2fr_1.5fr_120px] gap-4 p-4 border-b border-slate-50 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/50 text-sm font-medium text-slate-500 dark:text-slate-400">
+                <div className="grid grid-cols-[40px_1fr_40px] md:grid-cols-[50px_2fr_1.5fr_120px] gap-4 p-4 border-b border-slate-50 dark:border-slate-800 bg-slate-50/50 dark:bg-black/50 text-sm font-medium text-slate-500 dark:text-slate-400">
                   <div className="flex justify-center items-center">
                     <button 
                       onClick={toggleAll}
@@ -717,7 +659,7 @@ const scrollTimeout = useRef<NodeJS.Timeout | undefined>(undefined);
                         animate={{ opacity: 1 }}
                         onDoubleClick={() => handlePlay(item)}
                         className={cn(
-                          "grid grid-cols-[40px_1fr_40px] md:grid-cols-[50px_2fr_1.5fr_120px] gap-4 p-4 items-center hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-all duration-200 group cursor-pointer select-none active:scale-[0.99] rounded-xl",
+                          "grid grid-cols-[40px_1fr_40px] md:grid-cols-[50px_2fr_1.5fr_120px] gap-4 p-4 items-center hover:bg-slate-50 dark:hover:bg-black/50 transition-all duration-200 group cursor-pointer select-none active:scale-[0.99] rounded-xl",
                           isActive && "bg-sky-50/50 dark:bg-sky-900/20"
                         )}
                       >
@@ -738,7 +680,7 @@ const scrollTimeout = useRef<NodeJS.Timeout | undefined>(undefined);
                         <div className="flex items-center gap-3 overflow-hidden">
                           <div 
                             onClick={(e) => { e.stopPropagation(); handlePlay(item); }}
-                            className="w-10 h-10 rounded-lg bg-slate-100 dark:bg-slate-800 overflow-hidden flex-shrink-0 cursor-pointer relative group/cover"
+                            className="w-10 h-10 rounded-lg bg-slate-100 dark:bg-black overflow-hidden flex-shrink-0 cursor-pointer relative group/cover"
                           >
                             {item.cover ? (
                               <Image
