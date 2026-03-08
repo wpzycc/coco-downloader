@@ -61,7 +61,7 @@ export function PlayerBar({
         initial={{ y: 100, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         exit={{ y: 100, opacity: 0 }}
-        className="fixed bottom-0 left-0 right-0 bg-white/80 dark:bg-black/80 backdrop-blur-lg border-t border-slate-200 dark:border-slate-800 px-4 py-3 z-50 shadow-2xl shadow-slate-200/50 dark:shadow-none pb-safe"
+        className="fixed bottom-0 left-0 right-0 bg-white/80 dark:bg-black/80 backdrop-blur-lg px-4 py-3 z-50 shadow-2xl shadow-slate-200/50 dark:shadow-none pb-safe"
       >
         {/* Mobile Progress Bar */}
         <div className="absolute top-0 left-0 right-0 md:hidden -mt-3 px-0">
