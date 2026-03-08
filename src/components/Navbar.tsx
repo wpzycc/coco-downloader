@@ -1,7 +1,7 @@
 'use client';
 
-import Image from "next/image";
-import { Sun, Moon, Home } from "lucide-react";
+import Link from "next/link";
+import { Sun, Moon } from "lucide-react"; // 删除了 Home 和 Image
 import { useState, MouseEvent } from "react";
 import { useTheme } from "next-themes";
 import DeveloperPanel from "./DeveloperPanel";
@@ -53,26 +53,13 @@ export function Navbar() {
   return (
     <>
       <nav className="h-16 bg-white/80 dark:bg-black/80 backdrop-blur-md z-50 px-4 md:px-8 flex items-center justify-between transition-colors duration-300">
-        {/* 左上角 Logo - 改为 a 标签，强制刷新 */}
-        <a
-          href="https://music.wpys.cc"
-          className="flex items-center gap-2 group cursor-pointer"
-        >
-          <Image src="/images/cherry-logo.svg" alt="AQ音乐" width={40} height={40} className="h-10 w-auto transition-transform" />
+        {/* 左侧 - 只有文字 AQ音乐，图标已删除 */}
+        <Link href="https://music.wpys.cc" className="flex items-center gap-2 group cursor-pointer">
           <span className="text-lg font-semibold text-slate-800 dark:text-slate-200">AQ音乐</span>
-        </a>
+        </Link>
 
         <div className="flex items-center gap-2">
-          {/* 只保留首页按钮和主题切换，中间图标已删除 */}
-          
-          {/* 首页按钮 - 保留 a 标签 */}
-          <a
-            href="https://music.wpys.cc"
-            className="p-2 text-slate-400 dark:text-slate-500 hover:text-sky-500 dark:hover:text-sky-400 hover:bg-sky-50 dark:hover:bg-slate-800 rounded-full transition-all duration-300 cursor-pointer"
-            title="返回首页"
-          >
-            <Home className="w-5 h-5" />
-          </a>
+          {/* 右上角首页按钮已删除，只保留主题切换 */}
 
           {/* 主题切换按钮 */}
           <button
