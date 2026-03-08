@@ -42,16 +42,16 @@ export function DownloadDrawer({
             className="fixed inset-0 bg-black/20 backdrop-blur-sm z-[60]"
           />
 
-          {/* Drawer Panel */}
+          {/* Drawer Panel - 纯黑色背景，无边框 */}
           <motion.div
             initial={{ x: '100%' }}
             animate={{ x: 0 }}
             exit={{ x: '100%' }}
             transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-            className="fixed right-0 top-0 bottom-0 w-full max-w-md bg-white dark:bg-slate-900 shadow-2xl z-[70] border-l border-slate-100 dark:border-slate-800 flex flex-col"
+            className="fixed right-0 top-0 bottom-0 w-full max-w-md bg-white dark:bg-black shadow-2xl z-[70] flex flex-col"
           >
-            {/* Header */}
-            <div className="p-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between bg-slate-50/50 dark:bg-slate-900/50">
+            {/* Header - 无底部边框 */}
+            <div className="p-4 flex items-center justify-between bg-white/50 dark:bg-black/50">
               <div className="flex items-center gap-3">
                 <div className="relative">
                   <Download className="w-5 h-5 text-sky-500" />
@@ -87,7 +87,7 @@ export function DownloadDrawer({
                 sortedTasks.map((task) => (
                   <div
                     key={task.id}
-                    className="bg-slate-50 dark:bg-slate-800/50 rounded-xl p-3 flex gap-3 items-center group relative border border-transparent hover:border-sky-100 dark:hover:border-slate-700 transition-colors"
+                    className="bg-slate-50 dark:bg-slate-800/50 rounded-xl p-3 flex gap-3 items-center group relative"
                   >
                     {/* Cover */}
                     <div className="w-12 h-12 rounded-lg bg-slate-200 dark:bg-slate-700 overflow-hidden flex-shrink-0 relative">
@@ -164,12 +164,12 @@ export function DownloadDrawer({
               )}
             </div>
 
-            {/* Footer */}
+            {/* Footer - 无上边框 */}
             {tasks.some(t => t.status === 'completed' || t.status === 'error') && (
-              <div className="p-4 border-t border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50">
+              <div className="p-4 bg-white/50 dark:bg-black/50">
                 <button
                   onClick={onClearCompleted}
-                  className="w-full py-2 px-4 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors flex items-center justify-center gap-2"
+                  className="w-full py-2 px-4 bg-white dark:bg-slate-800 rounded-xl text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors flex items-center justify-center gap-2"
                 >
                   <Trash2 className="w-4 h-4" />
                   清空已完成/失败任务
